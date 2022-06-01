@@ -42,52 +42,21 @@ https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
 
 cd /home 
 
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
 验证
 
-curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+sudo curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 
 echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
 
 安装：
 
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 查看版本
 
 kubectl version --client
-
-
-
-
-
-搭建集群的工具 https://minikube.sigs.k8s.io/docs/start/
-
-安装
-
-cat /proc/version
-
-cd /home
-
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
-
-# 启动集群
-minikube start --force --driver=docker
-
-kubectl get po -A
-
-kubectl create deployment hello-minikube --image=k8s.gcr.io/echoserver:1.4
-
-kubectl expose deployment hello-minikube --type=NodePort --port=8080
-
-kubectl get services hello-minikube
-
-minikube service hello-minikube
-
-http://localhost:7080/
 
 
 

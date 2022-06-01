@@ -32,6 +32,6 @@
 2、集群和单机下的性能压测报告
 
 
-操作系统
+操作系统 
 
-Linux version 3.10.0-1160.62.1.el7.x86_64 (mockbuild@kbuilder.bsys.centos.org) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-44) (GCC) ) #1 SMP Tue Apr 5 16:57:59 UTC 2022
+腾讯云 - 轻量应用级服务器 - centos 7.6

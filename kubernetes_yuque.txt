@@ -1,0 +1,98 @@
+教程地址: https://www.yuque.com/fairy-era/yg511q/hg3u04
+
+
+防火墙
+
+systemctl stop firewalld
+
+systemctl disable firewalld
+
+主机名
+
+hostnamectl set-hostname k8s-master
+
+hostnamectl set-hostname k8s-node1
+
+
+cat >> /etc/hosts << EOF
+10.0.20.2 k8s-master
+10.0.8.13 k8s-node1
+EOF
+
+
+安装docker
+
+wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -O /etc/yum.repos.d/docker-ce.repo
+
+yum -y install docker-ce-18.06.3.ce-3.el7
+
+systemctl enable docker && systemctl start docker
+
+docker version
+
+镜像
+
+sudo mkdir -p /etc/docker
+
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],	
+  "registry-mirrors": ["https://du3ia00u.mirror.aliyuncs.com"],	
+  "live-restore": true,
+  "log-driver":"json-file",
+  "log-opts": {"max-size":"500m", "max-file":"3"},
+  "storage-driver": "overlay2"
+}
+EOF
+
+sudo systemctl daemon-reload
+
+sudo systemctl restart docker
+
+
+# 安装集群三大件
+
+yum install -y kubelet-1.18.0 kubeadm-1.18.0 kubectl-1.18.0
+
+更改driver
+
+vim /etc/sysconfig/kubelet
+
+# 修改
+KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"
+KUBE_PROXY_MODE="ipvs"
+
+# 设置为开机自动启动
+systemctl enable kubelet
+
+kubeadm config images list
+
+
+# 只有主节点
+# 由于默认拉取镜像地址k8s.gcr.io国内无法访问，这里需要指定阿里云镜像仓库地址
+kubeadm init \
+  --apiserver-advertise-address=10.0.20.2 \
+  --image-repository registry.aliyuncs.com/google_containers \
+  --kubernetes-version v1.18.0 \
+  --service-cidr=10.96.0.0/12 \
+  --pod-network-cidr=10.244.0.0/16
+
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+kubeadm join 10.0.20.2:6443 --token o0xiio.vea1h3ymmj3nnnz7 \
+    --discovery-token-ca-cert-hash sha256:f3953e8f09d2843a39e1987e9f40f8b97f09606b88e012b04a4cfbc742147edd
+
+
+
+
+
+
+
+
+
+
