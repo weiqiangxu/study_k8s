@@ -35,3 +35,8 @@
 操作系统 
 
 腾讯云 - 轻量应用级服务器 - centos 7.6
+
+
+语雀-搭建k8s集群
+
+教程地址: https://www.yuque.com/fairy-era/yg511q/hg3u04
