@@ -72,7 +72,7 @@ vm.swappiness = 0
 EOF
 ```
 
-````
+```
 # 加载br_netfilter模块
 modprobe br_netfilter
 ```
