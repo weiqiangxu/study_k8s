@@ -27,81 +27,113 @@ kubernetes生产实践之mongodb
 
 https://zhuanlan.zhihu.com/p/356658594
 
+http://t.zoukankan.com/klvchen-p-13685380.html
+
 ### 测试验证
 
 
 ### 一、MongoDB ReplicaSet
 
-1. kube支持的mongodb版本
+1. 创建命名空间
 
 ```
-kubectl get mongodbversions
+kubectl create namespace dev
+# 查看节点名称
+kubectl get nodes
 ```
 
-2. 定义配置文件，创建secret
-
-touch mongod.conf
+2. mongod-replicaset.yaml
 
 ```
-net:
-   maxIncomingConnections: 10000
-```
-
-kubectl create secret generic -n op mg-configuration --from-file=./mongod.conf
-
-kubectl get secret -n op
-
-
-3. mongod-replicaset.yaml
-
-```
-apiVersion: kubedb.com/v1alpha2
-kind: MongoDB
+apiVersion: apps/v1 
+kind: Deployment
 metadata:
-  name: mongodb-replicaset
-  namespace: op
+  namespace: dev
+  name: mongodb
+  labels:
+    app: mongodb
 spec:
-  version: "4.2.3"
-  replicas: 3
-  replicaSet:
-    name: rs0
-  configSecret:
-    name: mg-configuration
-  storage:
-    storageClassName: "rbd"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      nodeName: k8s-node1    # 固定在 k8s-node1 节点
+      containers:
+      - name: mongodb
+        image: mongo:4.2.9
+        resources:
+          limits:            # 限定资源
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME  # 设置用户名
+            value: root
+          - name: MONGO_INITDB_ROOT_PASSWORD  # 设置密码
+            value: '123456'
+        volumeMounts:
+          - mountPath: /data/db                    
+            name: mongodb-volume
+      volumes:
+        - name: mongodb-volume
+          hostPath:
+            path: /data/rs-mongodb-volume          # 映射的宿主机目录
+            type: DirectoryOrCreate
+ 
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: dev
+  name: mongodb
+spec:
+  type: ClusterIP
+  selector:
+    app: mongodb
+  ports:
+  - port: 27017
+    targetPort: 27017
 ```
 
 4. 执行安装 
 
 ```
 kubectl apply -f mongod-replicaset.yaml
-
-kubectl get po -n op
+kubectl get pod -n dev -o wide
+# 查看详细-如果起不来需要用于排查原因
+kubectl describe pod mongodb -n dev
 ```
 
 5. 查看用户名密码
 
 ```
-kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d
-
-kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d
+kubectl -n dev exec -it POD_NAME /bin/bash
 ```
 
 6. 登陆集群
 
 ```
-kubectl -n op  exec -ti mongodb-replicaset-0 -- /bin/bash
+mongo admin
 
-mongo admin -uroot -p123456
+db.auth('root','123456')
 
-查看当前PRIMARY节点
+use test
 
-rs.isMaster().primary
+db.createUser(
+   {
+     user: "test",
+     pwd: "test123",
+     roles: [ { role: "readWrite", db: "test" } ]
+   }
+)
 
 show dbs
 ```
@@ -142,11 +174,16 @@ spec:
 2. 执行部署，并查看部署状态
 
 ```
+kubectl exec -it podName  -c  containerName -n namespace -- shell comand
+
+kubectl exec -it mongodb -n op -- shell comand
 kubectl apply -f mongodb-sharding.yaml
 kubectl get po -n op
 ```
 
 3. 验证集群状态及读写
+
+
 
 # 获取账号密码
 kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.\username}' | base64 -d

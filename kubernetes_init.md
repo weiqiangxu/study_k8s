@@ -327,6 +327,7 @@ kubeadm reset
 # 查看pod执行详情定位无法启动的原因
 kubectl describe pod [pod name]
 kubectl describe pod nginx-deployment-xxx
+kubectl describe pod mongodb -n NamespaceName
 ```
 
 ```
