@@ -69,11 +69,14 @@ MongoDB 副本集之入门篇
 https://jelly.jd.com/article/5f990ebbbfbee00150eb620a
 
 
-
 Mongodb主从复制/ 副本集/分片集群介绍
 
 https://www.cnblogs.com/kevingrace/p/5685486.html
 
+
+官方推荐的搭建方案
+
+https://registry.hub.docker.com/r/bitnami/mongodb
 
 
 ### 实践
