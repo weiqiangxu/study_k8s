@@ -11,6 +11,8 @@
 
 https://www.jianshu.com/p/58ad9584a4a9
 
+https://www.yuque.com/fairy-era/yg511q/od4gy0
+
 ### 1. mysql-rc.yaml
 
 ```
